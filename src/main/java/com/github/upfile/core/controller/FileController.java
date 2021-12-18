@@ -1,6 +1,7 @@
 package com.github.upfile.core.controller;
 
-import com.github.upfile.core.exception.EM400;
+import com.github.upfile.core.exception.ApiError;
+import com.github.upfile.core.exception.EM404;
 import com.github.upfile.core.exception.RestException;
 import com.github.upfile.core.persistence.model.File;
 import com.github.upfile.core.persistence.repository.FileRepository;
@@ -40,7 +41,7 @@ public class FileController {
     @GetMapping("/{id}")
     public Mono<ResponseEntity<byte[]>> getFile(@PathVariable String id) {
         return fileRepository.findById(id)
-            .switchIfEmpty(Mono.error(() -> RestException.with(EM400.NOT_FOUND)))
+            .switchIfEmpty(Mono.error(() -> RestException.with(ApiError.NOT_FOUND)))
             .flatMap(file -> fileStorageService.getStoredFileAsByteArray(file.getId())
                     .map(byteArray -> ResponseEntity
                         .ok()
@@ -52,7 +53,7 @@ public class FileController {
     @DeleteMapping("/{id}")
     public Mono<Void> deleteFile(@PathVariable String id) {
         return fileRepository.findById(id)
-            .switchIfEmpty(Mono.error(() -> RestException.with(EM400.NOT_FOUND)))
+            .switchIfEmpty(Mono.error(() -> RestException.with(ApiError.NOT_FOUND)))
             .doOnNext(file -> this.fileStorageService.deleteStoredFile(file.getId()))
             .doOnNext(fileRepository::delete)
             .then();
