@@ -5,6 +5,7 @@ import com.github.upfile.core.exception.EM400;
 import com.github.upfile.core.exception.EM500;
 import com.github.upfile.core.exception.RestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,23 +46,11 @@ public class FileStorageService {
             .then();
     }
 
-    public Mono<Void> storeFile(String fileName, MultipartFile multipartFile) {
+    public Mono<Void> storeFile(String fileName, Mono<FilePart> filePartMono) {
         return Mono
             .just(fileName)
             .flatMap(this::getStoredFile)
-            .doOnNext(file -> {
-                try {
-                    FileOutputStream fos = new FileOutputStream(file);
-                    fos.write(multipartFile.getBytes());
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    Mono.error(() -> RestException.with(EM400.NOT_FOUND));
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                    Mono.error(() -> RestException.with(EM500.IO_EXCEPTION));
-                }
-            })
+            .doOnNext(file -> filePartMono.flatMap(it -> it.transferTo(file)))
             .onErrorResume(Mono::error)
             .then();
     }

@@ -7,12 +7,12 @@ import com.github.upfile.core.persistence.repository.FileRepository;
 import com.github.upfile.core.service.FileStorageService;
 import com.github.upfile.core.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,12 +28,12 @@ public class FileController {
 
     @GetMapping
     public Flux<File> listFiles() {
-        return fileRepository
-            .findAll();
+        return fileRepository.findAll();
     }
 
-    @PostMapping
-    public Mono<File> uploadFile(@RequestParam MultipartFile file) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<File> uploadFile(@RequestPart(name = "file", value = "file") Mono<FilePart> file) {
         return fileUploadService.upload(file);
     }
 
@@ -41,7 +41,7 @@ public class FileController {
     public Mono<ResponseEntity<byte[]>> getFile(@PathVariable String id) {
         return fileRepository.findById(id)
             .switchIfEmpty(Mono.error(() -> RestException.with(EM400.NOT_FOUND)))
-            .flatMap(file -> fileStorageService.getStoredFileAsByteArray(file.getFileName())
+            .flatMap(file -> fileStorageService.getStoredFileAsByteArray(file.getId())
                     .map(byteArray -> ResponseEntity
                         .ok()
                         .contentType(MediaType.valueOf(file.getMediaType()))
@@ -53,7 +53,8 @@ public class FileController {
     public Mono<Void> deleteFile(@PathVariable String id) {
         return fileRepository.findById(id)
             .switchIfEmpty(Mono.error(() -> RestException.with(EM400.NOT_FOUND)))
-            .doOnNext(file -> this.fileStorageService.deleteStoredFile(file.getFileName()))
+            .doOnNext(file -> this.fileStorageService.deleteStoredFile(file.getId()))
+            .doOnNext(fileRepository::delete)
             .then();
     }
 }

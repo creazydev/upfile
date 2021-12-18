@@ -11,6 +11,6 @@ public class FileUuidGenerator {
     public static String generate() {
         return System.currentTimeMillis()
             + "_"
-            + UUID.randomUUID().toString().replace("_", "").substring(0, 128);
+            + UUID.randomUUID().toString().replace("-", "").substring(0, 32);
     }
 }
