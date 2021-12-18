@@ -45,13 +45,4 @@ public class FileStorageService {
             .doOnNext(File::delete)
             .then();
     }
-
-    public Mono<Void> storeFile(String fileName, Mono<FilePart> filePartMono) {
-        return Mono
-            .just(fileName)
-            .flatMap(this::getStoredFile)
-            .doOnNext(file -> filePartMono.flatMap(it -> it.transferTo(file)))
-            .onErrorResume(Mono::error)
-            .then();
-    }
 }

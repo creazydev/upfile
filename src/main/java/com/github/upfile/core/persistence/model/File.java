@@ -38,7 +38,7 @@ public class File implements Persistable<String> {
     public File(String originalFileName, MediaType mediaType) {
         this.id = FileUuidGenerator.generate();
         this.originalFileName = originalFileName;
-        this.mediaType = mediaType.getType();
+        this.mediaType = mediaType.getType() + "/" + mediaType.getSubtype();
     }
 
     @Override
