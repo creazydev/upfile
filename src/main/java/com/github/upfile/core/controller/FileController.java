@@ -1,7 +1,6 @@
 package com.github.upfile.core.controller;
 
 import com.github.upfile.core.exception.ApiError;
-import com.github.upfile.core.exception.EM404;
 import com.github.upfile.core.exception.RestException;
 import com.github.upfile.core.persistence.model.File;
 import com.github.upfile.core.persistence.repository.FileRepository;

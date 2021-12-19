@@ -2,19 +2,16 @@ package com.github.upfile.core.persistence.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.upfile.core.persistence.generator.FileUuidGenerator;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.http.MediaType;
-import reactor.util.annotation.NonNull;
 
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 
@@ -22,6 +19,7 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@EqualsAndHashCode(doNotUseGetters = true)
 public class File implements Persistable<String> {
 
     @Id
@@ -32,6 +30,7 @@ public class File implements Persistable<String> {
 
     @CreatedDate
     @Getter(AccessLevel.NONE)
+    @EqualsAndHashCode.Exclude
     private LocalDateTime createdDate;
 
     @Builder
@@ -48,6 +47,6 @@ public class File implements Persistable<String> {
     }
 
     public ZonedDateTime getCreatedDate() {
-        return createdDate.atZone(ZoneId.systemDefault());
+        return Objects.nonNull(createdDate) ? createdDate.atZone(ZoneId.systemDefault()) : null;
     }
 }
