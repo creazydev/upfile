@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -88,13 +89,10 @@ class FileControllerTest {
 
     @Test
     void getFile() {
+
         File file = this.getSampleFile();
-        Mockito
-                .when(fileStorageService.getStoredFile(file.getId())
-                        .thenReturn(Mono.just(new byte[64])));
-        Mockito
-                .when(repository.findById(file.getId())
-                        .thenReturn(Mono.just(file)));
+        Mockito.when(repository.findById(file.getId())).thenReturn(Mono.just(file));
+        Mockito.when(fileStorageService.getStoredFileAsByteArray(file.getId())).thenReturn(Mono.just(new byte[64]));
 
         webClient.get()
                 .uri("/api/files/{id}", file.getId())
@@ -105,7 +103,7 @@ class FileControllerTest {
                 .expectBody(byte[].class);
 
         Mockito.verify(repository, times(1)).findById(file.getId());
-        Mockito.verify(fileStorageService, times(1)).getStoredFile(file.getId());
+        Mockito.verify(fileStorageService, times(1)).getStoredFileAsByteArray(file.getId());
     }
 
     @Test
